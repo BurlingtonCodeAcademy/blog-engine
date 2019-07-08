@@ -15,6 +15,15 @@ function addPost (thePost) {
   const body = document.createElement('p');
   body.textContent = thePost.body;
 
-  element.appendChild(title);
-  element.appendChild(body);
+  fetch('https://jsonplaceholder.typicode.com/users/' + thePost.userId)
+    .then(function(result) {
+      return result.json();
+    })
+    .then(function(userData) {
+      const userElement = document.createElement('h2')
+      userElement.textContent = userData.name
+      element.appendChild(userElement);
+      element.appendChild(title);
+      element.appendChild(body);
+    })
 }
