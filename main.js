@@ -25,11 +25,12 @@ function getUser(thePost) {
     });
 }
 
-
 function getAllPosts() {
-  const thePromises = []
+  const thePromises = [];
   for (let index = 1; index <= 100; index++) {
-    thePromises.push(fetch(`https://jsonplaceholder.typicode.com/posts/${index}`))
+    thePromises.push(
+      fetch(`https://jsonplaceholder.typicode.com/posts/${index}`)
+    );
   }
   addAllPosts(thePromises);
 }
@@ -37,34 +38,59 @@ function getAllPosts() {
 function addAllPosts(allPromises) {
   Promise.all(allPromises).then(postValues => {
     const allPosts = postValues.map(postResponse => postResponse.json());
-    console.log({allPosts});
+    console.log({ allPosts });
     Promise.all(allPosts)
       .then(allOrderedPosts => {
         return allOrderedPosts.sort((left, right) => {
-          return (left.id > right.id) ? -1 : 1;
+          return left.id > right.id ? -1 : 1;
         });
       })
       .then(reversePostData => {
-        console.log('All the posts...')
-        console.log({allPostData: reversePostData});
+        console.log("All the posts...");
+        console.log({ allPostData: reversePostData });
         reversePostData.forEach(post => {
           addPost(post);
         });
-    });
+      });
   });
 }
 
+function getAuthor(authorId) {
+  return fetch(`https://jsonplaceholder.typicode.com/users/${authorId}`).then(
+    response => {
+      return response.json();
+    }
+  );
+}
+
 function addPost(thePost) {
-  console.log({ id: thePost.id });
   const element = document.getElementById("container");
   const title = document.createElement("h2");
+  const titleLink = document.createElement('a');
   const body = document.createElement("p");
+  const author = document.createElement("h3");
+  const email = document.createElement('a');
+  const phone = document.createElement('a');
 
-  title.textContent = thePost.title;
-  body.textContent = thePost.body;
+  getAuthor(thePost.userId).then(authorData => {
+    titleLink.textContent = `Title: ${thePost.title}`;
+    titleLink.href = `/author.html?authorId=${authorData.id}`
+    body.textContent = `Body: ${thePost.body}`;
+    author.textContent = `Author: ${authorData.name}`;
+    email.textContent = `Email: ${authorData.email}`
+    email.href = 'mailto:' + authorData.email;
 
-  element.appendChild(title);
-  element.appendChild(body);
+    phone.textContent = `Phone: ${authorData.phone}`
+    phone.href = 'tel:' + authorData.phone;
+
+    title.appendChild(titleLink);
+    element.appendChild(title);
+    element.appendChild(body);
+    element.appendChild(author);
+    element.appendChild(email);
+    element.appendChild(document.createElement('br'));
+    element.appendChild(phone);
+  });
 }
 
 function unorderedAddAllPosts(allPromises) {
@@ -73,10 +99,9 @@ function unorderedAddAllPosts(allPromises) {
     postValue.then(value => {
       value.json().then(json => {
         addPost(json);
-      })
-    })
+      });
+    });
   });
 }
-
 
 getAllPosts();
